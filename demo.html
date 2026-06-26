@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Private AI chat that runs entirely in your browser — demo view." />
+  <title>Haven — Demo</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🔒</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ── Sidebar ─────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar__head">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true">🔒</span>
+          <span class="brand__name">Haven</span>
+        </div>
+        <button class="icon-btn sidebar__collapse" type="button" aria-label="Hide sidebar">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
+
+      <button class="new-chat" type="button">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        New chat
+      </button>
+
+      <nav class="conversations" aria-label="Chat history">
+        <div class="conv-group">Recent</div>
+        <div class="conv-item is-active">
+          <span class="conv-item__title">Acme renewal — action items</span>
+          <button class="conv-item__del" type="button" aria-label="Delete"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m-9 0v14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6"/></svg></button>
+        </div>
+        <div class="conv-item">
+          <span class="conv-item__title">Rewrite landing page copy</span>
+          <button class="conv-item__del" type="button" aria-label="Delete"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m-9 0v14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6"/></svg></button>
+        </div>
+        <div class="conv-item">
+          <span class="conv-item__title">Standup notes → summary</span>
+          <button class="conv-item__del" type="button" aria-label="Delete"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m-9 0v14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6"/></svg></button>
+        </div>
+      </nav>
+
+      <div class="sidebar__foot">
+        <div class="engine-mini">
+          <span class="dot dot--ready"></span>
+          <div class="engine-mini__text">
+            <strong>Model ready</strong>
+            <span class="muted">Runs locally from here on.</span>
+          </div>
+        </div>
+        <span class="local-badge is-offline">🔒 Offline · running locally</span>
+      </div>
+    </aside>
+
+    <!-- ── Main ────────────────────────────────────────────── -->
+    <div class="main">
+      <header class="topbar">
+        <button class="icon-btn" id="menuBtn" type="button" aria-label="Toggle sidebar">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="topbar__title">
+          <strong>Haven</strong>
+          <span class="topbar__meta muted">2 messages · stays on this device</span>
+        </div>
+        <span class="topbar__pill is-offline">
+          <span class="topbar__pill-dot" aria-hidden="true"></span>
+          Running offline
+        </span>
+      </header>
+
+      <div class="chat-scroll">
+        <div class="messages">
+          <div class="msg msg--user">
+            <div class="avatar">You</div>
+            <div class="bubble">Summarize these confidential meeting notes into 3 action items: "Acme renewal at risk, budget cut 20%, wants a discount by Friday, CFO unhappy with onboarding delays, now considering a competitor."</div>
+          </div>
+
+          <div class="msg msg--assistant">
+            <div class="avatar">🔒</div>
+            <div class="msg__col">
+              <div class="bubble">
+                <p>Here are three clear action items:</p>
+                <ol>
+                  <li><strong>Send Acme a revised offer before Friday</strong> — a discount that fits their reduced (−20%) budget to keep the renewal on the table.</li>
+                  <li><strong>Address the onboarding concern</strong> — set up a call with the CFO to acknowledge the delays and share a concrete recovery timeline.</li>
+                  <li><strong>Treat Acme as at-risk</strong> — prepare a side-by-side comparison against the competitor they mentioned, ready for the next conversation.</li>
+                </ol>
+              </div>
+              <div class="msg-actions">
+                <button class="msg-action" type="button"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="msg msg--user">
+            <div class="avatar">You</div>
+            <div class="bubble">Now draft a short, friendly email to Acme with that offer.</div>
+          </div>
+
+          <div class="msg msg--assistant">
+            <div class="avatar">🔒</div>
+            <div class="msg__col">
+              <div class="bubble">
+                <p><strong>Subject:</strong> A plan that fits your budget</p>
+                <p>Hi [Name],</p>
+                <p>Thanks for the open conversation. I know the timing and budget are tight, so we've put together a revised package that lands within your new range — and I'd love to get it to you before Friday.</p>
+                <p>I'd also like to personally walk you through how we're fixing the onboarding delays. Do you have 20 minutes this week?</p>
+                <p>Best,<br />[You]</p>
+              </div>
+              <div class="msg-actions">
+                <button class="msg-action" type="button"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="composer-wrap">
+        <div class="quick-actions">
+          <button class="chip" type="button">✍️ Improve writing</button>
+          <button class="chip" type="button">🔧 Fix grammar</button>
+          <button class="chip" type="button">📝 Summarize</button>
+          <button class="chip" type="button">🎩 Make formal</button>
+          <button class="chip" type="button">💬 Make casual</button>
+          <button class="chip" type="button">✂️ Shorten</button>
+        </div>
+
+        <form class="composer" onsubmit="return false">
+          <textarea rows="1" placeholder="Message Haven…">Make that email a little warmer and add a thank-you line.</textarea>
+          <div class="composer__actions">
+            <button class="circle-btn circle-btn--send" type="button" aria-label="Send">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </button>
+          </div>
+        </form>
+
+        <p class="composer__hint muted">Your messages stay on this device.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

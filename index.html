@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="A private AI chat & writing assistant that runs entirely in your browser. No uploads, no server, no API key." />
+  <meta name="theme-color" content="#0f766e" />
+  <title>Haven · Private AI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🔒</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- ── Sidebar ─────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar" aria-label="Conversations">
+      <div class="sidebar__head">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true">🔒</span>
+          <span class="brand__name">Haven</span>
+        </div>
+        <button class="icon-btn sidebar__collapse" id="collapseBtn" type="button" title="Hide sidebar" aria-label="Hide sidebar">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
+
+      <button class="new-chat" id="newChatBtn" type="button">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        New chat
+      </button>
+
+      <nav class="conversations" id="conversations" aria-label="Chat history"></nav>
+
+      <div class="sidebar__foot">
+        <div class="engine-mini" id="engineCard">
+          <span id="engineDot" class="dot dot--idle"></span>
+          <div class="engine-mini__text">
+            <strong id="engineState">Checking your browser…</strong>
+            <span id="engineDetail" class="muted">WebGPU is required.</span>
+          </div>
+        </div>
+        <div class="progress is-hidden" id="engineProgressWrap">
+          <div class="progress__bar" id="engineProgress"></div>
+        </div>
+        <span id="localBadge" class="local-badge is-hidden">🔒 Runs locally</span>
+      </div>
+    </aside>
+
+    <!-- ── Main ────────────────────────────────────────────── -->
+    <div class="main">
+      <header class="topbar">
+        <button class="icon-btn" id="menuBtn" type="button" title="Toggle sidebar" aria-label="Toggle sidebar">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="topbar__title">
+          <strong>Haven</strong>
+          <span id="convMeta" class="topbar__meta muted">New conversation</span>
+        </div>
+        <span id="topStatus" class="topbar__pill">
+          <span class="topbar__pill-dot" aria-hidden="true"></span>
+          <span id="topStatusText">100% on-device</span>
+        </span>
+      </header>
+
+      <div class="chat-scroll" id="chatScroll">
+        <div id="messages" class="messages" aria-live="polite">
+          <!-- Welcome / empty state -->
+          <div class="welcome" id="welcome">
+            <div class="welcome__mark" aria-hidden="true">🔒</div>
+            <h1 class="welcome__title">Your own private AI</h1>
+            <p class="welcome__sub">
+              A general AI assistant for chatting, drafting, rewriting and summarizing. Running locally on your device. Nothing you type ever leaves this page.
+            </p>
+            <div class="suggestions" id="suggestions">
+              <button class="suggestion" type="button" data-fill="Explain quantum computing like I'm five.">
+                <span class="suggestion__icon">🧠</span>
+                <span class="suggestion__text"><strong>Explain a concept</strong>Quantum computing, simply</span>
+              </button>
+              <button class="suggestion" type="button" data-fill="Draft a short, friendly email asking a client for feedback on our last project.">
+                <span class="suggestion__icon">✉️</span>
+                <span class="suggestion__text"><strong>Draft an email</strong>Ask a client for feedback</span>
+              </button>
+              <button class="suggestion" type="button" data-fill="Give me 5 creative names for a privacy-first note-taking app.">
+                <span class="suggestion__icon">💡</span>
+                <span class="suggestion__text"><strong>Brainstorm names</strong>For a new app</span>
+              </button>
+              <button class="suggestion" type="button" data-fill="Summarize the key idea of compound interest in three bullet points.">
+                <span class="suggestion__icon">📝</span>
+                <span class="suggestion__text"><strong>Summarize</strong>Compound interest in 3 points</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="composer-wrap">
+        <div id="quickActions" class="quick-actions">
+          <button class="chip" type="button" data-action="improve">✍️ Improve writing</button>
+          <button class="chip" type="button" data-action="grammar">🔧 Fix grammar</button>
+          <button class="chip" type="button" data-action="summarize">📝 Summarize</button>
+          <button class="chip" type="button" data-action="formal">🎩 Make formal</button>
+          <button class="chip" type="button" data-action="casual">💬 Make casual</button>
+          <button class="chip" type="button" data-action="shorten">✂️ Shorten</button>
+        </div>
+
+        <form id="composer" class="composer">
+          <textarea
+            id="input"
+            rows="1"
+            placeholder="Message Haven…  (Enter to send · Shift+Enter for a new line)"
+            disabled
+          ></textarea>
+          <div class="composer__actions">
+            <button id="stopBtn" class="circle-btn circle-btn--stop is-hidden" type="button" title="Stop generating" aria-label="Stop generating">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+            </button>
+            <button id="sendBtn" class="circle-btn circle-btn--send" type="submit" disabled title="Send" aria-label="Send">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </button>
+          </div>
+        </form>
+
+        <p id="hint" class="composer__hint muted">Waiting for the model to load…</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
