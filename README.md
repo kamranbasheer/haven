@@ -1,4 +1,4 @@
-# Haven — a fully on-device, private AI assistant
+# Haven: a fully on-device, private AI assistant
 
 A general-purpose AI chat & writing assistant that runs **entirely in your browser**.
 There is no backend, no API key, and no network call to any AI provider. The language
