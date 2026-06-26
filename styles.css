@@ -168,7 +168,7 @@ body {
 .conv-item__del:hover { background: rgba(180, 69, 58, 0.12); color: var(--danger); }
 .conv-empty { padding: 18px 12px; font-size: 0.85rem; color: var(--ink-soft); text-align: center; }
 
-/* Sidebar footer — engine status + local badge */
+/* Sidebar footer: engine status + local badge */
 .sidebar__foot {
   border-top: 1px solid var(--line-soft);
   padding: 12px 14px 16px;

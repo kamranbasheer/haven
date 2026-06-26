@@ -4,7 +4,7 @@
  *  Haven: a private, general-purpose AI assistant, fully local.
  *
  *  An in-browser LLM (WebLLM on WebGPU) that keeps a multi-turn
- *  conversation. Nothing you type ever leaves the page — the model runs
+ *  conversation. Nothing you type ever leaves the page. The model runs
  *  on your own GPU, and it keeps working with the network switched off.
  *
  *  UI: a full-screen app shell (sidebar history + conversation pane) with
@@ -15,9 +15,11 @@ import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
 import { marked } from "https://esm.run/marked@13";
 
 /* ── Tunables ──────────────────────────────────────────────────────── */
-// Qwen2.5-7B is a strong, clean instruct model (~5GB VRAM / one-time download).
-// If your GPU is tight on memory, drop to "Qwen2.5-3B-Instruct-q4f16_1-MLC" (~2.5GB).
-const LLM_MODEL = "Qwen2.5-7B-Instruct-q4f16_1-MLC";
+// Qwen3-8B is a strong, modern instruct model (~5.5GB VRAM / one-time download).
+// If your GPU is tight on memory, drop to "Qwen3-4B-q4f16_1-MLC" (~3GB).
+// Qwen3 is a hybrid reasoning model: it can emit <think>...</think> blocks.
+// We disable that below (chat config) and also strip any stray tags before display.
+const LLM_MODEL = "Qwen3-8B-q4f16_1-MLC";
 const SYSTEM_PROMPT =
   "You are a helpful, concise assistant for chatting, thinking and writing. " +
   "When asked to edit text, return only the rewritten text unless asked to explain. " +
@@ -27,7 +29,7 @@ const STORE_KEY = "haven.conversations.v1";
 
 // Quick-action templates wrap whatever is in the composer.
 const ACTIONS = {
-  improve: (t) => `Improve the writing of the following text — clearer and more polished, same meaning and language:\n\n${t}`,
+  improve: (t) => `Improve the writing of the following text so it is clearer and more polished, same meaning and language:\n\n${t}`,
   grammar: (t) => `Fix the spelling and grammar of the following text. Return only the corrected text:\n\n${t}`,
   summarize: (t) => `Summarize the following text in a few clear bullet points:\n\n${t}`,
   formal: (t) => `Rewrite the following text in a professional, formal tone:\n\n${t}`,
@@ -91,7 +93,7 @@ let history = [{ role: "system", content: SYSTEM_PROMPT }];
 boot();
 
 /* ════════════════════════════════════════════════════════════════════
- *  Boot — wire up UI, check WebGPU, warm up the model.
+ *  Boot: wire up UI, check WebGPU, warm up the model.
  * ════════════════════════════════════════════════════════════════════ */
 async function boot() {
   composer.addEventListener("submit", onSubmit);
@@ -131,7 +133,7 @@ async function boot() {
   newConversation({ silent: true });
   renderConversationList();
 
-  // Show the runs-locally badge right away — the app is local from the start.
+  // Show the runs-locally badge right away, since the app is local from the start.
   localBadge.classList.remove("is-hidden");
   updateLocalBadge();
   window.addEventListener("online", updateLocalBadge);
@@ -222,6 +224,9 @@ async function send(content, opts = {}) {
       messages: history,
       stream: true,
       temperature: 0.5,
+      // Qwen3 is a hybrid reasoning model; keep replies as direct answers
+      // (no <think> blocks) for this chat/writing assistant.
+      extra_body: { enable_thinking: false },
     });
 
     for await (const part of stream) {
@@ -232,7 +237,9 @@ async function send(content, opts = {}) {
       const delta = part.choices?.[0]?.delta?.content || "";
       if (delta) {
         answer += delta;
-        bubble.textContent = answer;   // plain text while streaming (fast + safe)
+        // Strip any reasoning block before painting (defensive: enable_thinking
+        // should suppress it, but never show <think> contents to the user).
+        bubble.textContent = stripThinking(answer);
         scrollToBottom();
       }
     }
@@ -240,6 +247,7 @@ async function send(content, opts = {}) {
     answer = answer || `Something went wrong: ${err && err.message ? err.message : err}`;
     bubble.textContent = answer;
   } finally {
+    answer = stripThinking(answer);
     bubble.classList.remove("is-streaming");
     renderMarkdown(bubble, answer);          // pretty markdown once complete
     bubble.dataset.raw = answer;             // copy yields the raw markdown
@@ -380,7 +388,7 @@ function loadStore() {
 function saveStore() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(conversations));
-  } catch { /* storage full or unavailable — stay in-memory */ }
+  } catch { /* storage full or unavailable, stay in-memory */ }
 }
 
 function newConversation(opts = {}) {
@@ -559,6 +567,17 @@ function buildWelcome() {
     input.focus();
   });
   return node;
+}
+
+// Remove Qwen3 reasoning blocks. Drops a closed <think>…</think> span, and while
+// a block is still streaming (open <think> with no close yet) hides everything
+// after it so partial reasoning never flashes on screen.
+function stripThinking(text) {
+  if (!text) return text;
+  let out = text.replace(/<think>[\s\S]*?<\/think>\s*/gi, "");
+  const open = out.lastIndexOf("<think>");
+  if (open !== -1) out = out.slice(0, open);
+  return out.replace(/^\s+/, "");
 }
 
 // For quick actions, show the user's original text in the bubble (not the template wrapper).

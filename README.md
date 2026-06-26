@@ -52,24 +52,28 @@ badge in the sidebar even flips to **"🔒 Offline · running locally"** to prov
 
 ## What actually does the thinking
 
-### 1. The model: Qwen2.5-7B-Instruct (quantized)
+### 1. The model: Qwen3-8B (quantized)
 
 The app loads a single instruct-tuned model:
 
 ```js
 // app.js
-const LLM_MODEL = "Qwen2.5-7B-Instruct-q4f16_1-MLC";
+const LLM_MODEL = "Qwen3-8B-q4f16_1-MLC";
 ```
 
-- **Qwen2.5-7B-Instruct**: a strong, general-purpose chat/instruction model (~7B parameters).
+- **Qwen3-8B**: a strong, modern general-purpose chat/instruction model (~8B parameters).
 - **`q4f16_1`**: the weights are **4-bit quantized** (with fp16 activations). Quantization
-  shrinks the model from tens of GB down to a roughly **~5 GB** one-time download and lets
+  shrinks the model from tens of GB down to a roughly **~5.5 GB** one-time download and lets
   it fit in consumer GPU memory.
 - **`-MLC`**: the model has been compiled into the format the MLC runtime understands
   (see below).
 
-If your GPU is tight on memory, the smaller `Qwen2.5-3B-Instruct-q4f16_1-MLC` (~2.5 GB)
-is a drop-in replacement — change the one constant above.
+Qwen3 is a hybrid *reasoning* model: it can emit internal `<think>…</think>` blocks
+before answering. Haven turns that off (`enable_thinking: false`) and strips any stray
+tags, so you always see a direct reply.
+
+If your GPU is tight on memory, the smaller `Qwen3-4B-q4f16_1-MLC` (~3 GB)
+is a drop-in replacement. Just change the one constant above.
 
 ### 2. The engine: WebLLM + MLC
 
@@ -91,7 +95,7 @@ Instead of sending an HTTP request to a server, it runs the model locally:
 ### 3. The hardware path: WebGPU
 
 [**WebGPU**](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API) is the modern
-browser API for general-purpose GPU compute. It's what makes running a 7B model in a tab
+browser API for general-purpose GPU compute. It's what makes running an 8B model in a tab
 practical. The app checks for it before doing anything:
 
 ```js
@@ -109,11 +113,11 @@ fallback would break the privacy guarantee.
 
 ## The lifecycle of a session
 
-### First visit — the only time the network is touched for AI
+### First visit: the only time the network is touched for AI
 
 1. `boot()` checks for WebGPU.
 2. It calls `CreateMLCEngine(LLM_MODEL, { initProgressCallback })`.
-3. WebLLM downloads the model shards (~5 GB) from the MLC model CDN and the compiled
+3. WebLLM downloads the model shards (~5.5 GB) from the MLC model CDN and the compiled
    WASM runtime. Progress is streamed to the sidebar status:
 
    ```js
@@ -129,7 +133,7 @@ fallback would break the privacy guarantee.
 4. The browser stores those weights in its **Cache Storage / IndexedDB**. This is the
    "one-time download, cached for next time" you see in the UI.
 
-### Every visit after that — fully local
+### Every visit after that: fully local
 
 - The weights are already cached, so loading is just reading them off disk into GPU
   memory. No download, no server.
@@ -188,7 +192,7 @@ You don't have to take the word "private" on faith:
 
 1. **Load the page once** and wait for the model to finish downloading ("Model ready").
 2. **Open DevTools → Network**, then send a few messages. You'll see **no requests**
-   going out while chatting — generation is local.
+   going out while chatting, since generation is local.
 3. **Go offline**: turn off Wi-Fi, or in DevTools → Network set throttling to *Offline*.
 4. Keep chatting. It still works, and the sidebar badge changes to
    **"🔒 Offline · running locally"** (driven by the browser's `online`/`offline` events):
@@ -208,9 +212,9 @@ your own machine.
   bet. (Safari and Firefox WebGPU support is progressing but less reliable for models
   this size.)
 - **A reasonably modern GPU** with enough memory:
-  - ~6 GB+ free VRAM for the default 7B model.
-  - ~3 GB+ for the 3B alternative.
-- **~5 GB of free disk** for the cached weights (one-time).
+  - ~6 GB+ free VRAM for the default 8B model.
+  - ~3.5 GB+ for the 4B alternative.
+- **~5.5 GB of free disk** for the cached weights (one-time).
 - Internet **once**, for the initial download. After that, offline is fine.
 
 ---
@@ -219,7 +223,7 @@ your own machine.
 
 | File | Role |
 |---|---|
-| `index.html` | The app shell — sidebar (history + status) and chat pane markup. |
+| `index.html` | The app shell: sidebar (history + status) and chat pane markup. |
 | `app.js` | All the logic: WebGPU check, model load, streaming, history, markdown, copy. |
 | `styles.css` | The full-screen app UI. |
 | `demo.html` | A **static** screenshot/demo page (no model, no JS) for previews. |
@@ -230,10 +234,10 @@ your own machine.
 
 - **No backend, on purpose.** The entire privacy story depends on there being no server
   to send your text to. That's also why there's no account, no API key, and no telemetry.
-- **One-time cost for permanent privacy.** The ~5 GB download is the price of admission;
+- **One-time cost for permanent privacy.** The ~5.5 GB download is the price of admission;
   after that everything is free, instant-to-start, and offline-capable.
-- **It runs on *your* hardware.** Speed depends on your GPU. A 7B model on a laptop iGPU
-  will be slower than on a discrete GPU — but it's *yours*, and it works on a plane.
+- **It runs on *your* hardware.** Speed depends on your GPU. An 8B model on a laptop iGPU
+  will be slower than on a discrete GPU, but it's *yours*, and it works on a plane.
 - **Markdown is rendered locally** from the model's output for readability; assistant
   replies include a **Copy** button to grab the raw markdown.
 
@@ -251,4 +255,4 @@ your own machine.
 
 **Bottom line:** the only thing the network is ever used for is fetching the model the
 first time. Every prompt, every token of every reply, and your entire chat history stay
-on your device — provably so, even with the Wi-Fi off.
+on your device, provably so, even with the Wi-Fi off.
