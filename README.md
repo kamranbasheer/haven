@@ -5,7 +5,7 @@ There is no backend, no API key, and no network call to any AI provider. The lan
 model is downloaded once, cached on your machine, and every token after that is
 generated **on your own GPU**. Nothing you type ever leaves the page.
 
-This document explains *how* that works — the runtime, the model, where it lives, and
+This document explains *how* that works: the runtime, the model, where it lives, and
 how you can prove to yourself that it really is offline.
 
 ---
@@ -45,7 +45,7 @@ how you can prove to yourself that it really is offline.
         └── first visit downloads model weights from a CDN, then it's cached
 ```
 
-After the first load, you can switch off Wi-Fi and the assistant keeps working — the
+After the first load, you can switch off Wi-Fi and the assistant keeps working. The
 badge in the sidebar even flips to **"🔒 Offline · running locally"** to prove it.
 
 ---
@@ -61,11 +61,11 @@ The app loads a single instruct-tuned model:
 const LLM_MODEL = "Qwen2.5-7B-Instruct-q4f16_1-MLC";
 ```
 
-- **Qwen2.5-7B-Instruct** — a strong, general-purpose chat/instruction model (~7B parameters).
-- **`q4f16_1`** — the weights are **4-bit quantized** (with fp16 activations). Quantization
+- **Qwen2.5-7B-Instruct**: a strong, general-purpose chat/instruction model (~7B parameters).
+- **`q4f16_1`**: the weights are **4-bit quantized** (with fp16 activations). Quantization
   shrinks the model from tens of GB down to a roughly **~5 GB** one-time download and lets
   it fit in consumer GPU memory.
-- **`-MLC`** — the model has been compiled into the format the MLC runtime understands
+- **`-MLC`**: the model has been compiled into the format the MLC runtime understands
   (see below).
 
 If your GPU is tight on memory, the smaller `Qwen2.5-3B-Instruct-q4f16_1-MLC` (~2.5 GB)
@@ -81,11 +81,11 @@ pulled straight from a CDN as an ES module:
 import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
 ```
 
-WebLLM gives us an **OpenAI-compatible API** (`engine.chat.completions.create(...)`),
-but instead of sending an HTTP request to a server, it runs the model locally:
+WebLLM gives us an **OpenAI-compatible API** (`engine.chat.completions.create(...)`).
+Instead of sending an HTTP request to a server, it runs the model locally:
 
 - The model's compute graph is compiled (ahead of time, by MLC) and shipped as
-  **WebAssembly** + GPU shader code.
+  **WebAssembly** plus GPU shader code.
 - At runtime WebLLM uses that to execute the transformer **on your GPU via WebGPU**.
 
 ### 3. The hardware path: WebGPU
@@ -102,7 +102,7 @@ if (!("gpu" in navigator)) {
 }
 ```
 
-No WebGPU ⇒ no local model. There is intentionally **no cloud fallback**, because a cloud
+No WebGPU means no local model. There is intentionally **no cloud fallback**, because a cloud
 fallback would break the privacy guarantee.
 
 ---

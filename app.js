@@ -1,7 +1,7 @@
 "use strict";
 
 /* ════════════════════════════════════════════════════════════════════
- *  Haven — a private, general-purpose AI assistant, fully local.
+ *  Haven: a private, general-purpose AI assistant, fully local.
  *
  *  An in-browser LLM (WebLLM on WebGPU) that keeps a multi-turn
  *  conversation. Nothing you type ever leaves the page — the model runs
